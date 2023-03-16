@@ -52,7 +52,6 @@ cdef extern from "class.h":
         double Neff
         double Omega0_g
         double Omega0_b
-        double Omega_ini_dcdm
         double Omega0_cdm
         double Omega0_dcdm
         double Omega0_ncdm_tot
@@ -66,7 +65,6 @@ cdef extern from "class.h":
         double Omega0_scf
         double Omega0_k
         int bt_size
-        double tau_dcdm
 
     cdef struct thermo:
         ErrorMsg error_message
@@ -76,9 +74,7 @@ cdef extern from "class.h":
         short inter_normal
         double tau_reio
         double tau_reio_AT
-        double annihilation_cross_section
-        double annihilation
-        double DM_mass
+        double cut_ratio
         double z_reio
         double z_10_percent
         double z_50_percent

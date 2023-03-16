@@ -1009,6 +1009,9 @@ cdef class Class:
     def tau_reio(self):
         return self.th.tau_reio
 
+    def tau_reio_AT(self):
+        return self.th.tau_reio_AT
+
     # Defined twice ?
     def Omega_m(self):
         return self.ba.Omega0_b+self.ba.Omega0_cdm+self.ba.Omega0_ncdm_tot + self.ba.Omega0_dcdm
@@ -1593,18 +1596,10 @@ cdef class Class:
             elif name == 'omega_m':
                 value = (self.ba.Omega0_b + self.ba.Omega0_cdm+
                          self.ba.Omega0_ncdm_tot + self.ba.Omega0_dcdm)/self.ba.h**2
-            elif name == 'tau_dcdm':
-                value = self.ba.tau_dcdm
             elif name == 'tau_reio':
                 value = self.th.tau_reio
             elif name == 'tau_reio_AT':
                 value = self.th.tau_reio_AT
-            elif name == 'DM_mass':
-                value = self.th.DM_mass
-            elif name == 'annihilation_cross_section':
-                value = self.th.annihilation_cross_section
-            elif name == 'annihilation':
-                value = self.th.annihilation
             elif name == 'z_reio':
                 value = self.th.z_reio
             elif name == 'z_10_percent':
