@@ -115,7 +115,7 @@ struct thermo
   double tau_reio; /**< if above set to tau, input value of reionization optical depth */
 
   double z_reio;   /**< if above set to z,   input value of reionization redshift */
-  
+
   double tau_reio_AT; // to hold value of optical depth integrated out to z = 275
 
   short compute_cb2_derivatives; /**< do we want to include in computation derivatives of baryon sound speed? */
@@ -257,8 +257,6 @@ double * reio_inter_xe; /**< discrete \f$ X_e(z)\f$ values */
   double annihilation_f_halo; /** takes the contribution of DM annihilation in halos into account*/
   double annihilation_z_halo; /** characteristic redshift for DM annihilation in halos*/
   double cut_ratio; /** value of k_cut/k_RH for EMDE scenarios **/
-  double t_rh; /** value of T_RH for EMDE scenarios **/
-  double ns_switch; /** whether to scale boost by value of n_s **/
   double f_eff; /** effective on the spot parameter */
 
   double decay_fraction; /** parameter describing CDM decay (f/tau, see e.g. 1109.6322)*/
