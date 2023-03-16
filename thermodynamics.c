@@ -297,9 +297,13 @@ int thermodynamics_init(
   double tau;
   double g_max;
   int index_tau_max;
-  
+
   // added to get optical depth at our desired redshift
   double zdef = 275.0;
+  double tau_at_zdef;
+  double tau_here;
+
+//   printf("just initialized zdef = %d\n",zdef);
 
 
   /** - initialize pointers, allocate background vector */
@@ -651,6 +655,16 @@ int thermodynamics_init(
 
   free(tau_table);
 
+  // find conformal time for the z we want
+
+//   printf("about to call background_tau_of_z, zdef = %e and tau_at_zdef = %e\n",zdef,tau_at_zdef);
+
+  class_call(background_tau_of_z(pba,zdef,&tau_at_zdef),
+             pba->error_message,
+             pth->error_message);
+
+//   printf("just called background_tau_of_z, now zdef = %e and tau_at_zdef = %e\n",zdef,tau_at_zdef);
+
   /** - --> compute visibility: \f$ g= (d \kappa/d \tau) e^{- \kappa} \f$ */
 
   /* loop on z (decreasing z, increasing time) */
@@ -659,11 +673,18 @@ int thermodynamics_init(
     /** - ---> compute exp(-kappa) */
     pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_exp_m_kappa] =
       exp(pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_g]);
-      
+
+    // tau_table freed by this point
+    // tau_here = tau_table[index_tau];
+
     if(pth->z_table[index_tau] == zdef) {
       pth->tau_reio_AT = -pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_g];
-      // printf("right now, zdef = %e, pth->z_table[index_tau] = %e, and -kappa = %e\n",zdef,pth->z_table[index_tau],-pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_g]);
+    //   printf("right now, zdef = %e, pth->z_table[index_tau] = %e, and -kappa = %e\n",zdef,pth->z_table[index_tau],-pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_g]);
     }
+    // if(tau_here == tau_at_zdef) {
+    //   printf("conformal time at z = %f is %d\n",zdef,tau_at_zdef);
+    //   printf("optical depth at z = %f is %d\n",zdef,-pth->thermodynamics_table[index_tau*pth->th_size+pth->index_th_g]);
+    // }
 
 
     /** - ---> compute g */
@@ -860,11 +881,12 @@ int thermodynamics_init(
       if (pth->reio_z_or_tau==reio_tau)
         printf(" -> reionization  at z = %f\n",pth->z_reio);
       if (pth->reio_z_or_tau==reio_z)
-        printf(" -> reionization with optical depth = %f\n",pth->tau_reio);
+        printf(" -> reionization with standard optical depth = %f\n",pth->tau_reio);
       class_call(background_tau_of_z(pba,pth->z_reio,&tau_reio),
                  pba->error_message,
                  pth->error_message);
       printf("    corresponding to conformal time = %f Mpc\n",tau_reio);
+      printf(" --> optical depth at z = 275 is %f\n",pth->tau_reio_AT);
       // printf("duration of reionization = %e, with z_beg = %e, z_mid = %e, z_end = %e\n",pth->duration_of_reionization,pth->z_10_percent,pth->z_50_percent, pth->z_99_percent);
     }
     if((pth->reio_parametrization == reio_douspis_et_al) || (pth->reio_parametrization == reio_asymmetric_planck_16)){
@@ -873,7 +895,6 @@ int thermodynamics_init(
                pba->error_message,
                pth->error_message);
       printf("    corresponding to conformal time = %f Mpc\n",tau_reio);
-      printf(" --> optical depth at z = 275 is %f\n",pth->tau_reio_AT);
       // printf("duration of reionization = %e, with z_beg = %e, z_mid = %e, z_end = %e\n",pth->duration_of_reionization,pth->z_10_percent,pth->z_50_percent, pth->z_99_percent);
     }
     if (pth->reio_parametrization == reio_bins_tanh) {
@@ -1320,6 +1341,7 @@ int thermodynamics_annihilation_coefficients_init(
      heat, excitation of lyman-alpha level, Hydrogen ionisation, Helium ionisation, photons below 10.2 eV unseeable by the IGM.
 
   */
+  
 
   /* BEGIN: Add switch (1) */
   if (pth->energy_deposition_function == function_from_file || pth->energy_repart_coefficient == GSVI || pth->energy_repart_coefficient == chi_from_file) {

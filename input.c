@@ -1496,18 +1496,16 @@ int input_read_parameters(
   }
 
   if (pth->annihilation > 0.){
-      // if we have a p_ann but not a cross section, calculate the cross section - for monte python derived params
-      if (pth->annihilation_cross_section == 0){
-          pth->annihilation_cross_section = pth->annihilation*pth->DM_mass*(1.78*pow(10,-21));
-        //   fprintf(stdout,"Entered m_DM = %.2e, p_ann = = %.2e; now <σv> = %.2e on line 1502 of input.c. \n",pth->DM_mass,pth->annihilation,pth->annihilation_cross_section);
-      }
+    // if we have a p_ann but not a cross section, calculate the cross section - for monte python derived params
+    if (pth->annihilation_cross_section == 0){
+      pth->annihilation_cross_section = pth->annihilation*pth->DM_mass*(1.78*pow(10,-21));
+    //   fprintf(stdout,"Entered m_DM = %.2e, p_ann = = %.2e; now <σv> = %.2e on line 1502 of input.c. \n",pth->DM_mass,pth->annihilation,pth->annihilation_cross_section);
+    }
     class_read_double("annihilation_f_halo",pth->annihilation_f_halo);
     class_read_double("annihilation_z_halo",pth->annihilation_z_halo);
     class_read_double("cut_ratio",pth->cut_ratio);
-    class_read_double("t_rh",pth->t_rh);
-    class_read_int("ns_switch",pth->ns_switch);
   }
-  
+
   class_read_double("n_s",ppm->n_s);
 
   /** - Relevant parameters in case of exotic energy injection */
@@ -1733,14 +1731,8 @@ int input_read_parameters(
           strcat(ppr->command_fz," --cut=");
           sprintf(string2,"%g",pth->cut_ratio);
           strcat(ppr->command_fz,string2);
-          strcat(ppr->command_fz," --trh=");
-          sprintf(string2,"%g",pth->t_rh);
-          strcat(ppr->command_fz,string2);
           strcat(ppr->command_fz," --ns=");
           sprintf(string2,"%g",ppm->n_s);
-          strcat(ppr->command_fz,string2);
-          strcat(ppr->command_fz," --ns_switch=");
-          sprintf(string2,"%g",pth->ns_switch);
           strcat(ppr->command_fz,string2);
         //   fprintf(stdout,"DarkAges command: %s\n",ppr->command_fz);
         }
@@ -3729,8 +3721,6 @@ int input_default_params(
   pth->annihilation_f_halo = 0.;
   pth->annihilation_z_halo = 30.;
   pth->cut_ratio = 0.;
-  pth->t_rh = 0.;
-  pth->ns_switch = 0;
   pth->has_on_the_spot = _TRUE_;
   pth->print_energy_deposition_function = _FALSE_;
   pth->reio_stars_and_dark_matter = _TRUE_; //if set to false, the effect of DM decay on the reionization is bypassed within the reionisation module. For illustration only.
