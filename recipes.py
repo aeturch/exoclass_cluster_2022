@@ -213,7 +213,7 @@ def evaporating_PBH( PBH_mass_ini, transfer_functions, logEnergies=None, redshif
 					  f_eff,
 					  **DarkOptions)
 
-def loading_from_specfiles(fnames, transfer_functions, mass,  logEnergies=None, redshift=None, t_dec=np.inf,zh=1.,fh=0.,cut=0.,trh=1.,ns=0.9665,ns_switch=0,hist='annihilation', branchings=[1.], **DarkOptions):
+def loading_from_specfiles(fnames, transfer_functions, mass,  logEnergies=None, redshift=None, t_dec=np.inf,zh=1.,fh=0.,cut=0.,ns=0.9665,hist='annihilation', branchings=[1.], **DarkOptions):
 	u"""Wrapper to calculate :math:`f(z)` and print the table for all five deposition channels
 	from spectra tabulated in files for a given injection history.
 
@@ -322,7 +322,7 @@ def loading_from_specfiles(fnames, transfer_functions, mass,  logEnergies=None, 
 	elif hist == 'annihilation':
 		model_from_file = annihilating_model(tot_spec[0], tot_spec[1], tot_spec[2], 1e9*mass,logEnergies,redshift, **DarkOptions)
 	elif hist == 'annihilation_halos':
-		model_from_file = annihilating_halos_model(tot_spec[0], tot_spec[1], tot_spec[2], 1e9*mass,zh,fh,cut,trh,ns,ns_switch,logEnergies,redshift, **DarkOptions)
+		model_from_file = annihilating_halos_model(tot_spec[0], tot_spec[1], tot_spec[2], 1e9*mass,zh,fh,cut,ns,logEnergies,redshift, **DarkOptions)
 	else:
 		raise DarkAgesError('The method >> {:s} << cannot deal with the injection history >> {:s} <<'.format(loading_from_specfiles.__name__, hist))
 	try:

@@ -16,9 +16,11 @@ import sys
 import numpy as np
 import csv
 from datetime import datetime
-# from .special_functions import boost_factor_halos
+
 from .special_functions import EMDE_boost
-# from .special_functions import boost_interp
+from .special_functions import bfnc
+from .special_functions import afnc
+from .special_functions import get_fitted_boost
 
 from .__init__  import DarkAgesError, print_warning, get_background
 
@@ -489,11 +491,11 @@ def sample_spectrum(input_spec_el, input_spec_ph, input_spec_oth, input_log10E, 
 ######
 ## AT edits
 ######
-def get_correction_factor(z,z_h=1,f_h=1,z_const=12.0115):
+# def get_correction_factor(z,z_h=1,f_h=1,z_const=12.0115):
   # return (1+boost_erfc(z,30,f_h))/(1+boost_erfc(z_const,30,f_h))
   # recall boost_factor_halos expects 1+z, and returns 1 + B(z)
   # return boost_factor_halos(1+z,z_h,f_h)/boost_factor_halos(1+z_const,z_h,f_h)
-  return (1+EMDE_boost(z))/(1+EMDE_boost(z_const))
+#   return (1+EMDE_boost(z))/(1+EMDE_boost(z_const))
 
 def get_new_z(redshift):
     # note we use the redshift array excluding z = 0
@@ -508,7 +510,8 @@ def get_new_z(redshift):
     new_z = np.insert(old_z,0,more_z)
     return new_z
     
-def get_corrected_fc(redshift,f_c,z_h=1,f_h=1,z_const=12.0115):
+# def get_corrected_fc(redshift,f_c,z_h=1,f_h=1,z_const=12.0115):
+def get_corrected_fc(redshift,f_c,cut=40,z_const=12.0115):
     ### note: was using old_f = f_heat before! source of mismatch in lengths?
     old_f = f_c[1:]
     more_f = []
@@ -522,11 +525,13 @@ def get_corrected_fc(redshift,f_c,z_h=1,f_h=1,z_const=12.0115):
     f_const = old_f[0]
 
     # use auxiliary function that does the interpolating so we're not doing it every time
-    EMDE_boost_aux = boost_interp()
+    # EMDE_boost_aux = boost_interp()
 
     # for each new redshift
     for z in more_z:
-        correction_factor = (1+EMDE_boost_aux(z))/(1+EMDE_boost_aux(z_const))
+        # correction_factor = (1+EMDE_boost_aux(z))/(1+EMDE_boost_aux(z_const))
+        # note EMDE_boost returns 1 + B so no need for a 1 + here (030223)
+        correction_factor = EMDE_boost(cut,0.9665,z)/EMDE_boost(cut,0.9665,z_const)
         # calculate each corrected f by multiplying f_const = f(z_const) by the correction factor
         more_f.append(f_const*correction_factor)
 
@@ -607,7 +612,7 @@ def finalize(redshift, f_heat, f_lya, f_ionH, f_ionHe, f_lowE, **DarkOptions):
     #     sys.stdout.write('{:.2e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\n'.format(corrected_redshift[idx],corrected_f_heat[idx],corrected_f_lya[idx],corrected_f_ionH[idx],corrected_f_ionHe[idx],corrected_f_lowE[idx]))
     # sys.stdout.write('{:.2e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\n'.format(max_z,corrected_f_heat[last-1],corrected_f_lya[last-1],corrected_f_ionH[last-1],corrected_f_ionHe[last-1],corrected_f_lowE[last-1]))
 
-    # # also write to file
+    # absolutely do NOT write to file on the cluster - 2/1/23
     # # get datetime for titling
     # now = datetime.now()
     # now_str = now.strftime('%y%m%d_%H%M%S')
@@ -617,6 +622,8 @@ def finalize(redshift, f_heat, f_lya, f_ionH, f_ionHe, f_lowE, **DarkOptions):
     #     for idx in range(first-1,last):
     #         fz_writer.writerow([corrected_redshift[idx],corrected_f_heat[idx],corrected_f_lya[idx],corrected_f_ionH[idx],corrected_f_ionHe[idx],corrected_f_lowE[idx]])
 
+    ######## begin unmodified f(z) here
+    
     redshift = redshift - np.ones_like(redshift) # Go from DarkAges-redshift (z+1) to CLASS-redshift (z)
 
     if DarkOptions.get('merge_ion',False):
@@ -639,11 +646,12 @@ def finalize(redshift, f_heat, f_lya, f_ionH, f_ionHe, f_lowE, **DarkOptions):
       sys.stdout.write('{:.2e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\n'.format(redshift[idx],f_heat[idx],f_lya[idx],f_ionH[idx],f_ionHe[idx],f_lowE[idx]))
     sys.stdout.write('{:.2e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\t{:.4e}\n'.format(max_z,f_heat[last-1],f_lya[last-1],f_ionH[last-1],f_ionHe[last-1],f_lowE[last-1]))
 
+    # absolutely do NOT write to file on the cluster - 2/1/23
     # also write to file
-    # get datetime for titling
+    # # get datetime for titling
     # now = datetime.now()
     # now_str = now.strftime('%y%m%d_%H%M%S')
-    # filename = '/nas/longleaf/home/aeturch/AT_exoclass/class_public/f(z) graveyard/f_' + now_str + '.csv'
+    # filename = '/Users/alice/Documents/class_folder/class_public/f(z) graveyard/f_' + now_str + '.csv'
     # with open(filename, mode='w') as fz_file:
     #     fz_writer = csv.writer(fz_file, delimiter=' ')
     #     fz_writer.writerow([min_z,f_heat[first],f_lya[first],f_ionH[first],f_ionHe[first],f_lowE[first]])

@@ -187,18 +187,16 @@ class annihilating_model(model):
 		model.__init__(self, spec_electrons, spec_photons, normalization,logEnergies, 3)
 
 class annihilating_halos_model(model):
-	def __init__(self,ref_el_spec,ref_ph_spec,ref_oth_spec,m,zh,fh,cut,trh,ns,ns_switch,logEnergies=None,redshift=None, **DarkOptions):
+	def __init__(self,ref_el_spec,ref_ph_spec,ref_oth_spec,m,zh,fh,cut,ns,logEnergies=None,redshift=None, **DarkOptions):
 
 		from .special_functions import boost_factor_halos
 		from .special_functions import EMDE_boost
-# 		from .special_functions import EMDE_boost_switch
 
-		def scaling_boost_factor(redshift,spec_point,zh,fh,cut,trh,ns,ns_switch):
+		def scaling_boost_factor(redshift,spec_point,zh,fh,cut,ns):
 			if cut is None: # EMDE parameter has not been passed, but we're in this fcn, so must be erfc boosts
-			    ret = spec_point*boost_factor_halos(redshift,zh,fh)
-			else: # EMDE parameter was passed, cut has a value
-			    ret = spec_point*EMDE_boost(cut,trh,redshift,ns,ns_switch)
-			 #   ret = spec_point*EMDE_boost_switch(cut,trh,redshift,ns,ns_switch)
+				ret = spec_point*boost_factor_halos(redshift,zh,fh)
+			else:
+				ret = spec_point*EMDE_boost(cut,ns,redshift)
 			return ret
 
 		if logEnergies is None:
@@ -241,8 +239,8 @@ class annihilating_halos_model(model):
 		### original exoclass code: simple typo from *= boost
 		### normalization /= boost_factor_halos(redshift,zh,fh)
 
-		spec_electrons = np.vectorize(scaling_boost_factor).__call__(redshift[None,:],ref_el_spec[:,None],zh,fh,cut,trh,ns,ns_switch)
-		spec_photons = np.vectorize(scaling_boost_factor).__call__(redshift[None,:],ref_ph_spec[:,None],zh,fh,cut,trh,ns,ns_switch)
+		spec_electrons = np.vectorize(scaling_boost_factor).__call__(redshift[None,:],ref_el_spec[:,None],zh,fh,cut,ns)
+		spec_photons = np.vectorize(scaling_boost_factor).__call__(redshift[None,:],ref_ph_spec[:,None],zh,fh,cut,ns)
 
 		model.__init__(self, spec_electrons, spec_photons, normalization, logEnergies,3)
 

@@ -10,8 +10,32 @@ from scipy.special import erfc
 from .__init__ import DarkAgesError as err
 data_dir = os.path.join( os.path.dirname(os.path.realpath( __file__ )), 'data' )
 
+# def boost_fit(rs):
+#   # kcut/krh = 10
+
+# def boost_interp(cut):
+#   kcut_krh = cut
+#   # directory
+#   fp = '/Users/alice/Documents/class_folder/more_boost_files/'
+
+#   # read redshift array
+#   # with open(fp+'zList.txt','r') as f1:
+#   #   rs_list = [float(line.rstrip('\n')) for line in f1]
+#   z_arr = np.genfromtxt(fp+'zList.txt')
+
+#   # read boost (with kcut/krh passed as an argument)
+#   # with open(fp+'e_boost_'+str(kcut_krh)+'.txt','r') as f2:
+#   #   boost = [float(line.rstrip('\n')) for line in f2]
+#   boost_arr = np.genfromtxt(fp+'boost_'+str(int(kcut_krh))+'.txt')
+
+#   # get interpolating function
+#   # f_boost = interp1d(rs_list,boost)
+#   f_boost = interp1d(z_arr,boost_arr)
+
+#   return f_boost
+
 def bfnc(ns):
-	### currently for T_RH = 1 GeV
+    ### currently for T_RH = 1 GeV
     if ns >= 0.9665:
         b = 52.368421052632*ns - 49.614078947368
        
@@ -20,94 +44,28 @@ def bfnc(ns):
     return b
 
 def afnc(ns):
-	### currently for T_RH = 1 GeV
+    ### currently for T_RH = 1 GeV
     a = 15.131578947368*ns - 13.624671052632
     return a
 
 def get_fitted_boost(z,p):
     if z < p['tail_rs'][0]:
-        ret = p['B0']*(1+(z/p['z_b'])**p['n'])**(p['alpha']/p['n'])
+        return p['B0']*(1+(z/p['z_b'])**p['n'])**(p['alpha']/p['n'])
     else:
         for zv,pt in zip(p['tail_rs'][1:],p['tail_params']):
             if z <= zv:
-                ret = np.exp(pt[1])*(z**pt[0])
+                return np.exp(pt[1])*(z**pt[0])
         if z > p['tail_rs'][-1]:
             tp = p['tail_params'][-1]
-            ret = np.exp(tp[1])*(z**tp[0])
-            # # for cut = 10 and 20, using the last set of parameters isn't good; boost is just zero
+            return np.exp(tp[1])*(z**tp[0])
+            # for cut = 10 and 20, using the last set of parameters isn't good; boost is just zero
             # if p['tail_rs'][-1] < 2999.7:
-            #     ret = 0
+            #     return 0
             # else:
             #     tp = p['tail_params'][-1]
-            #     ret = np.exp(tp[1])*(z**tp[0])
-    return ret
+            #     return np.exp(tp[1])*(z**tp[0])
 
-# def EMDE_boost_switch(cut,trh,redshift,ns,ns_switch):
-#     # fit for cut = 20, TRH = 1 TeV
-#     base_params = {'B0': 4180980770.8478265,
-#     'z_b': 1145.8384827006334,
-#     'n': 4.030607726196712,
-#     'alpha': -20,
-#     'tail_rs': [1290.3, 1454.1422412 , 1638.78916348, 1846.8825444 ,
-#         2081.39961432, 2345.69565217],
-#         'tail_params': [(-14.742258386185462, 123.08317801537228),
-#         (-18.164977395017125, 148.01696814969137),
-#         (-23.57089104695555, 188.03759521196466),
-#         (-30.33626758837326, 238.9321435694571),
-#         (-38.88923943759744, 304.30387268292094)]}
-        
-#     if cut == 10 and trh == 10: # 10 MeV
-#         a_trh = 0.16887266088544153 
-#         b_trh = 0.004670982187873465
-#     elif cut == 10 and trh == 1e3: # 1 GeV
-#         a_trh = 0.2131446827932472 
-#         b_trh = 0.009254761707827163
-#     elif cut == 10 and trh == 1e6: # 1 TeV
-#         a_trh = 0.26700136923779577
-#         b_trh = 0.0179497489387182
-#     elif cut == 20 and trh == 10: # 10 MeV
-#         a_trh = 0.6659059790050454 
-#         b_trh = 0.2951948774925948
-#     elif cut == 20 and trh == 1e3: # 1 GeV
-#         a_trh = 0.8224554997718183 
-#         b_trh = 0.5576097898003176
-#     elif cut == 20 and trh == 1e6: # 1 TeV
-#         a_trh = 1.0
-#         b_trh = 1.0
-#     elif cut == 30 and trh == 10: # 10 MeV
-#         a_trh = 1.5801004107712568 
-#         b_trh = 4.000608302002662
-#     elif cut == 30 and trh == 1e3: # 1 GeV
-#         a_trh = 1.937927886809533 
-#         b_trh = 7.509870196071563
-#     elif cut == 30 and trh == 1e6: # 1 TeV
-#         a_trh = 2.3633044272019927
-#         b_trh = 13.430635641804578
-#     elif cut == 40 and trh == 10: # 10 MeV
-#         a_trh = 2.8464932298798473 
-#         b_trh = 27.01772170817606
-#     elif cut == 40 and trh == 1e3: # 1 GeV
-#         a_trh = 3.3546325878594674 
-#         b_trh = 46.39380015976517
-#     elif cut == 40 and trh == 1e6: # 1 TeV
-#         a_trh = 4.071200365130129
-#         b_trh = 90.17794688914744
-#     else:
-#         a_trh = 1.0
-#         b_trh = 1.0
-    
-#     if ns_switch == 1:
-#         a_ns = afnc(ns)
-#         b_ns = bfnc(ns)
-#     else:
-#         a_ns = 1
-#         b_ns = 1
-    
-#     # division by (1+z)^3 to account for issue in boost calc - 12/7/22
-#     # return (1/(1+redshift)**3)*b_ns*b_trh*get_fitted_boost(redshift/(a_trh*a_ns),base_params)
-#     return b_ns*b_trh*get_fitted_boost(redshift/(a_trh*a_ns),base_params)
-
-def EMDE_boost(cut,trh,redshift,ns,ns_switch):
+def EMDE_boost(cut,ns,redshift):
     ### currently for T_RH = 1 GeV
     params = []
     if cut == 10:
@@ -155,127 +113,141 @@ def EMDE_boost(cut,trh,redshift,ns,ns_switch):
             (-2.1434289561023143, 42.11190431923245),
             (-2.92240448344829, 48.19943233919457),
             (-4.401025467842664, 59.909049495537474)]}
-    
-    if ns_switch == 1:
-        a = afnc(ns)
-        b = bfnc(ns)
-    else:
-        a = 1
-        b = 1
-    
-    # division by (1+z)^3 to account for issue in boost calc - 12/7/22
-    return 1 + (1/(1+redshift)**3)*(b*get_fitted_boost(redshift/a,params))
-    
-    # other versions to solve SBG problem
-    # return 1 + (1/(1+redshift)**3)*(b*get_fitted_boost(redshift/a,params))
-    # return (1/(1+redshift)**3)*(1 + b*get_fitted_boost(redshift/a,params))
-    
-    # TEMPORARILY back to B(z) instead of B(z)(1+z)^3 to check something
-    # return 1 + b*get_fitted_boost(redshift/a,params)
+    elif cut == 100: # fake decay lol (for 10)
+        B0 = 38693980.73920416
+        return 1+B0*((1+redshift)**(-3))
+    elif cut == 200: # fake decay lol (for 20)
+        B0 = 2331355808.7916265
+        return 1+B0*((1+redshift)**(-3))
+    elif cut == 300: # fake decay lol (for 30)
+        B0 = 31398622881.3384
+        return 1+B0*((1+redshift)**(-3))
+    elif cut == 400: # fake decay lol (for 40)
+        B0 = 193971586354.535
+        return 1+B0*((1+redshift)**(-3))
+
+    # if ns_switch == 1:
+    #     a = afnc(ns)
+    #     b = bfnc(ns)
+    # else:
+    #     a = 1
+    #     b = 1
+
+    a = afnc(ns)
+    b = bfnc(ns)
+    # return 1+b*get_fitted_boost(redshift/a,params)
+    return 1 + (1/(1+redshift)**3)*b*get_fitted_boost(redshift/a,params)
+
+
+# def EMDE_boost(cut,redshift):
+#   # get interp1d object
+#   f_boost = boost_interp(cut)
+#   # return boost at given redshift
+#   return f_boost(redshift)
 
 def boost_factor_halos(redshift,zh,fh):
-	# ret = 1 + fh*erf(redshift/(1+zh))/redshift**3
-	ret = 1 + fh*erfc(redshift/(1+zh))/redshift**3
-	return ret
+    # ret = 1 + fh*erf(redshift/(1+zh))/redshift**3
+    ret = 1 + fh*erfc(redshift/(1+zh))/redshift**3
+    return ret
 
 def secondaries_from_cirelli(logEnergies,mass,primary, **DarkOptions):
-	from .common import sample_spectrum
-	cirelli_dir = os.path.join(data_dir, 'cirelli')
-	dumpername = 'cirelli_spectrum_of_{:s}.obj'.format(primary)
+    from .common import sample_spectrum
+    cirelli_dir = os.path.join(data_dir, 'cirelli')
+    dumpername = 'cirelli_spectrum_of_{:s}.obj'.format(primary)
 
-	injection_history = DarkOptions.get("injection_history","annihilation")
-	if "decay" in injection_history:
-		equivalent_mass = mass/2.
-	else:
-		equivalent_mass = mass
-	if equivalent_mass < 5 or equivalent_mass > 1e5:
-		raise err('The spectra of Cirelli are only given in the range [5 GeV, 1e2 TeV] assuming DM annihilation. The equivalent mass for the given injection_history ({:.2g} GeV) is not in that range.'.format(equivalent_mass))
+    injection_history = DarkOptions.get("injection_history","annihilation")
+    if "decay" in injection_history:
+        equivalent_mass = mass/2.
+    else:
+        equivalent_mass = mass
+    if equivalent_mass < 5 or equivalent_mass > 1e5:
+        raise err('The spectra of Cirelli are only given in the range [5 GeV, 1e2 TeV] assuming DM annihilation. The equivalent mass for the given injection_history ({:.2g} GeV) is not in that range.'.format(equivalent_mass))
 
-	if not hasattr(logEnergies,'__len__'):
-		logEnergies = np.asarray([logEnergies])
-	else:
-		logEnergies = np.asarray(logEnergies)
+    if not hasattr(logEnergies,'__len__'):
+        logEnergies = np.asarray([logEnergies])
+    else:
+        logEnergies = np.asarray(logEnergies)
 
-	if not os.path.isfile( os.path.join(cirelli_dir, dumpername)):
-		sys.path.insert(1,cirelli_dir)
-		from spectrum_from_cirelli import get_cirelli_spectra
-		masses, log10X, dNdLog10X_el, dNdLog10X_ph, dNdLog10X_oth = get_cirelli_spectra(primary)
-		total_dNdLog10X = np.asarray([dNdLog10X_el, dNdLog10X_ph, dNdLog10X_oth])
-		from .interpolator import NDlogInterpolator
-		interpolator = NDlogInterpolator(masses, np.rollaxis(total_dNdLog10X,1), exponent = 0, scale = 'log-log')
-		dump_dict = {'dNdLog10X_interpolator':interpolator, 'log10X':log10X}
-		with open(os.path.join(cirelli_dir, dumpername),'wb') as dump_file:
-			dill.dump(dump_dict, dump_file)
-	else:
-		with open(os.path.join(cirelli_dir, dumpername),'rb') as dump_file:
-			dump_dict = dill.load(dump_file)
-			interpolator = dump_dict.get('dNdLog10X_interpolator')
-			log10X = dump_dict.get('log10X')
-	del dump_dict
-	temp_log10E = log10X + np.log10(equivalent_mass)*np.ones_like(log10X)
-	temp_el, temp_ph, temp_oth = interpolator.__call__(equivalent_mass) / (10**temp_log10E * np.log(10))[None,:]
-	ret_spectra = np.empty(shape=(3,len(logEnergies)))
-	ret_spectra = sample_spectrum(temp_el, temp_ph, temp_oth, temp_log10E, mass, logEnergies, **DarkOptions)
-	return ret_spectra
+    if not os.path.isfile( os.path.join(cirelli_dir, dumpername)):
+        sys.path.insert(1,cirelli_dir)
+        from spectrum_from_cirelli import get_cirelli_spectra
+        masses, log10X, dNdLog10X_el, dNdLog10X_ph, dNdLog10X_oth = get_cirelli_spectra(primary)
+        total_dNdLog10X = np.asarray([dNdLog10X_el, dNdLog10X_ph, dNdLog10X_oth])
+        from .interpolator import NDlogInterpolator
+        interpolator = NDlogInterpolator(masses, np.rollaxis(total_dNdLog10X,1), exponent = 0, scale = 'log-log')
+        dump_dict = {'dNdLog10X_interpolator':interpolator, 'log10X':log10X}
+        with open(os.path.join(cirelli_dir, dumpername),'wb') as dump_file:
+            dill.dump(dump_dict, dump_file)
+    else:
+        with open(os.path.join(cirelli_dir, dumpername),'rb') as dump_file:
+            dump_dict = dill.load(dump_file)
+            interpolator = dump_dict.get('dNdLog10X_interpolator')
+            log10X = dump_dict.get('log10X')
+    del dump_dict
+    temp_log10E = log10X + np.log10(equivalent_mass)*np.ones_like(log10X)
+    temp_el, temp_ph, temp_oth = interpolator.__call__(equivalent_mass) / (10**temp_log10E * np.log(10))[None,:]
+    ret_spectra = np.empty(shape=(3,len(logEnergies)))
+    ret_spectra = sample_spectrum(temp_el, temp_ph, temp_oth, temp_log10E, mass, logEnergies, **DarkOptions)
+    return ret_spectra
 
 def secondaries_from_simple_decay(E_secondary, E_primary, primary):
-	if primary not in ['muon','pi0','piCh']:
-		raise err('The "simple" decay spectrum you asked for (species: {:s}) is not (yet) known.'.format(primary))
+    if primary not in ['muon','pi0','piCh']:
+        raise err('The "simple" decay spectrum you asked for (species: {:s}) is not (yet) known.'.format(primary))
 
-	if not hasattr(E_secondary,'__len__'):
-		E_secondary = np.asarray([E_secondary])
-	else:
-		E_secondary = np.asarray(E_secondary)
+    if not hasattr(E_secondary,'__len__'):
+        E_secondary = np.asarray([E_secondary])
+    else:
+        E_secondary = np.asarray(E_secondary)
 
-	decay_dir  = os.path.join(data_dir, 'simple_decay_spectra')
-	dumpername = 'simple_decay_spectrum_of_{:s}.obj'.format(primary)
-	original_data = '{:s}_normed.dat'.format(primary)
+    decay_dir  = os.path.join(data_dir, 'simple_decay_spectra')
+    dumpername = 'simple_decay_spectrum_of_{:s}.obj'.format(primary)
+    original_data = '{:s}_normed.dat'.format(primary)
 
-	if not os.path.isfile( os.path.join(decay_dir, dumpername)):
-		data = np.genfromtxt( os.path.join(decay_dir, original_data), unpack = True, usecols=(0,1,2,3))
-		from .interpolator import NDlogInterpolator
-		spec_interpolator = NDlogInterpolator(data[0,:], data[1:,:].T, exponent = 1, scale = 'lin-log')
-		dump_dict = {'spec_interpolator':spec_interpolator}
-		with open(os.path.join(decay_dir, dumpername),'wb') as dump_file:
-			dill.dump(dump_dict, dump_file)
-	else:
-		with open(os.path.join(decay_dir, dumpername),'rb') as dump_file:
-			dump_dict = dill.load(dump_file)
-			spec_interpolator = dump_dict.get('spec_interpolator')
+    if not os.path.isfile( os.path.join(decay_dir, dumpername)):
+        data = np.genfromtxt( os.path.join(decay_dir, original_data), unpack = True, usecols=(0,1,2,3))
+        from .interpolator import NDlogInterpolator
+        spec_interpolator = NDlogInterpolator(data[0,:], data[1:,:].T, exponent = 1, scale = 'lin-log')
+        dump_dict = {'spec_interpolator':spec_interpolator}
+        with open(os.path.join(decay_dir, dumpername),'wb') as dump_file:
+            dill.dump(dump_dict, dump_file)
+    else:
+        with open(os.path.join(decay_dir, dumpername),'rb') as dump_file:
+            dump_dict = dill.load(dump_file)
+            spec_interpolator = dump_dict.get('spec_interpolator')
 
-	x = E_secondary / E_primary
-	out = spec_interpolator.__call__(x)
-	out /= (np.log(10)*E_secondary)[:,None]
-	return out
+    x = E_secondary / E_primary
+    out = spec_interpolator.__call__(x)
+    out /= (np.log(10)*E_secondary)[:,None]
+    return out
 
 def luminosity_accreting_bh(Energy,recipe,PBH_mass):
-	if not hasattr(Energy,'__len__'):
-		Energy = np.asarray([Energy])
-	if recipe=='spherical_accretion':
-		a = 0.5
-		Ts = 0.4*511e3
-		Emin = 1
-		Emax = Ts
-		out = np.zeros_like(Energy)
-		Emin_mask = Energy > Emin
-		# Emax_mask = Ts > Energy
-		out[Emin_mask] = Energy[Emin_mask]**(-a)*np.exp(-Energy[Emin_mask]/Ts)
-		out[~Emin_mask] = 0.
-		# out[~Emax_mask] = 0.
+    if not hasattr(Energy,'__len__'):
+        Energy = np.asarray([Energy])
+    if recipe=='spherical_accretion':
+        a = 0.5
+        Ts = 0.4*511e3
+        Emin = 1
+        Emax = Ts
+        out = np.zeros_like(Energy)
+        Emin_mask = Energy > Emin
+        # Emax_mask = Ts > Energy
+        out[Emin_mask] = Energy[Emin_mask]**(-a)*np.exp(-Energy[Emin_mask]/Ts)
+        out[~Emin_mask] = 0.
+        # out[~Emax_mask] = 0.
 
-	elif recipe=='disk_accretion':
-		a = -2.5+np.log10(PBH_mass)/3.
-		Emin = (10/PBH_mass)**0.5
-		# print a, Emin
-		Ts = 0.4*511e3
-		out = np.zeros_like(Energy)
-		Emin_mask = Energy > Emin
-		out[Emin_mask] = Energy[Emin_mask]**(-a)*np.exp(-Energy[Emin_mask]/Ts)
-		out[~Emin_mask] = 0.
-		Emax_mask = Ts > Energy
-		out[~Emax_mask] = 0.
-	else:
-		from .__init__ import DarkAgesError as err
-		raise err('I cannot understand the recipe "{0}"'.format(recipe))
-	# print out, Emax_mask
-	return out/Energy #We will remultiply by Energy later in the code
+    elif recipe=='disk_accretion':
+        a = -2.5+np.log10(PBH_mass)/3.
+        Emin = (10/PBH_mass)**0.5
+        # print a, Emin
+        Ts = 0.4*511e3
+        out = np.zeros_like(Energy)
+        Emin_mask = Energy > Emin
+        out[Emin_mask] = Energy[Emin_mask]**(-a)*np.exp(-Energy[Emin_mask]/Ts)
+        out[~Emin_mask] = 0.
+        Emax_mask = Ts > Energy
+        out[~Emax_mask] = 0.
+    else:
+        from .__init__ import DarkAgesError as err
+        raise err('I cannot understand the recipe "{0}"'.format(recipe))
+    # print out, Emax_mask
+    return out/Energy #We will remultiply by Energy later in the code
